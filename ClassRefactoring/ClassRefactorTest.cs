@@ -37,5 +37,15 @@ namespace DeveloperSample.ClassRefactoring
             swallow.ApplyLoad(SwallowLoad.Coconut);
             Assert.Equal(16, swallow.GetAirspeedVelocity());
         }
+
+
+        [Fact]
+        public void SwallowWithNullLoad()
+        {
+            var swallowFactory = new SwallowFactory();
+            var swallow = swallowFactory.GetSwallow(SwallowType.European);
+            swallow.ApplyLoad(null);
+            Assert.Equal(20, swallow.GetAirspeedVelocity());
+        }
     }
 }

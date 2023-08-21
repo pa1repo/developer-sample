@@ -8,3 +8,11 @@
   background-color:lightgray;
   padding: 2em;
 }
+
+
+.form {
+  border: 1px solid #e7e4e4;
+  border-radius: 1em;
+  margin-top: 1em;
+  box-shadow: 2px 3px 7px #999797;
+}

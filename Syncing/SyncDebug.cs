@@ -12,39 +12,39 @@ namespace DeveloperSample.Syncing
         public List<string> InitializeList(IEnumerable<string> items)
         {
             var bag = new ConcurrentBag<string>();
-            Parallel.ForEach(items, async i =>
+            Parallel.ForEach(items, i =>
             {
-                var r = await Task.Run(() => i).ConfigureAwait(false);
+                var r = i;
                 bag.Add(r);
             });
             var list = bag.ToList();
             return list;
         }
 
+
         public Dictionary<int, string> InitializeDictionary(Func<int, string> getItem)
         {
             var itemsToInitialize = Enumerable.Range(0, 100).ToList();
 
             var concurrentDictionary = new ConcurrentDictionary<int, string>();
-            var threads = Enumerable.Range(0, 3)
-                .Select(i => new Thread(() => {
-                    foreach (var item in itemsToInitialize)
-                    {
-                        concurrentDictionary.AddOrUpdate(item, getItem, (_, s) => s);
-                    }
-                }))
-                .ToList();
+            var threads = itemsToInitialize.Count;
 
-            foreach (var thread in threads)
+            var countdownEvent = new CountdownEvent(threads);
+
+            foreach (var item in itemsToInitialize)
             {
-                thread.Start();
+                ThreadPool.QueueUserWorkItem(state =>
+                {
+                    var index = (int)state;
+                    concurrentDictionary.TryAdd(index, getItem(index));
+                    countdownEvent.Signal();
+                }, item);
             }
-            foreach (var thread in threads)
-            {
-                thread.Join();
-            }
+
+            countdownEvent.Wait();
 
             return concurrentDictionary.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
+
     }
 }
